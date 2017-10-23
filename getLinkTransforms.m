@@ -89,7 +89,7 @@ robot = SerialLink(links, 'name', 'test');
 robot.plot([0 0 0 0 0 0 0]);
 
 
-%% RMRC TEST
+%% RMRC TEST With figures
 close all;
 qmatrix = [];
 velocity = [-0.2,0.2,0.4,0,0,0]';
@@ -205,7 +205,51 @@ for i = 2:steps
     end
     
 end
-figure(3)
+% figure(3)
+% robot.plot(qmatrix, 'trail','-r', 'fps',60)
+
+%% RMRC without figures
+close all;
+qmatrix = [];
+velocity = [-0.2,0.2,0.4,0,0,0]';
+steps = 100;
+
+time = 1;
+
+deltaT = time/steps;
+qmatrix(1,:) = robot.ikcon(transl(0.702,-0.007,0.384)*rpy2tr(-7.669*180/pi, 6.221*180/pi, 141*180/pi));
+
+c = [10 100 1000 10000 100000 100000 1000000];
+
+% W = diag(1:7);
+W = eye(7);
+% W = calcW(W, robot,qmatrix(1,:),c);
+
+WList = [];
+WList(:,:,1) = W;
+
+for i = 2:steps
+    J = robot.jacob0(qmatrix(i-1,:));
+    
+    jV = (inv(W)*J')*inv(J*inv(W)*J')*velocity;
+    
+    slowDown = 0;
+    
+    for x = 1:length(jV)
+        if(jV(x) > 20)
+            slowDown = 1;
+        end
+    end
+    
+    if(slowDown)
+        jV = jV.*0.01;
+    end
+    
+    qmatrix(i,:) = qmatrix(i-1,:) + (jV*deltaT)';
+    
+    W = calcW(W, robot,qmatrix(i-1,:),c);
+    WList(:,:,i) = W;
+end
 robot.plot(qmatrix, 'trail','-r', 'fps',60)
 
 %% Draw Random
@@ -233,5 +277,60 @@ transforms = linkPoses(robot, [0 0 0 ]);
 
 printPlots(transforms,[2]);
 
-%% VS fetch
+%% Calc transforms
+
+%let
+%   XR = roll
+%   YP = Pitcj
+%   ZY = Yaw
+%   Q_{1:7} = joint angles
+%   A_{1:7} = alpha 1 to 7
+
+syms XR YP ZY X Y Z Q1 Q2 Q3 Q4 Q5 Q6 Q7 A1 A2 A3 A4 A5 A6 A7;
+syms z1 z2 z3 z4 z5 z6 z7;
+syms a1 a2 a3 a5 a5 a6 a7;
+
+q = [Q1 Q2 Q3 Q4 Q5 Q6 Q7];
+alphas = [A1 A2 A3 A4 A5 A6 A7];
+d = [z1 z2 z3 z4 z5 z6 z7];
+a = [a1 a2 a3 a5 a5 a6 a7];
+
+TRx = [1 0 0; 0 cos(XR) -sin(XR); 0 sin(XR) cos(XR)];
+TRy = [cos(YP) 0 sin(YP); 0 1 0; -sin(YP) 0 cos(YP)];
+TRz = [cos(ZY) -sin(ZY) 0; sin(ZY) cos(ZY) 0; 0 0 1];
+
+baseRot = TRx * TRy * TRz;
+
+basePos = [baseRot, [X; Y; Z];0 0 0 1];
+
+transforms(:,:,1) = basePos;
+
+for i = 1:7
+    currentTransform = transforms(:,:,i);
+    
+    currentTransform = currentTransform * trotz(q(1,i)) * ...
+    transl(0,0, d(i)) * transl(a(i),0,0) * trotx(alphas(i));
+
+    transforms(:,:,i + 1) = currentTransform;
+end
+
+%%
+
+transforms = zeros(4, 4, length(links) + 1);
+transforms(:,:,1) = robot.base;
+
+for i = 1:length(links)
+    L = links(1,i);
+    
+    current_transform = transforms(:,:, i);
+    
+    current_transform = current_transform * trotz(q(1,i) + L.offset) * ...
+    transl(0,0, L.d) * transl(L.a,0,0) * trotx(L.alpha);
+    
+    transforms(:,:,i + 1) = current_transform;
+end
+
+
+
+
 

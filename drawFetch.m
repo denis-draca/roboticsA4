@@ -55,39 +55,48 @@ l1 = Link('d',0.06,'a',0.1170,'alpha',pi/2, ...
     'offset', 0, 'qlim', jointLim1);
 l1.I = body1.Inertia;
 l1.r = body1.CenterOfMass;
+l1.m = body1.Mass;
 
 l2 = Link('d',0,'a',0,'alpha',-pi/2,...
     'offset',-pi/2, 'qlim', jointLim2);
 l2.I = body2.Inertia;
 l2.r = body2.CenterOfMass + body1.CenterOfMass;
+l2.m = body2.Mass;
 
 l3 = Link('d',0.3520,'a',0,'alpha',pi/2,'offset',0, ...
     'offset', 0, 'qlim', jointLim3);
 l3.I = body3.Inertia;
 l3.r = body3.CenterOfMass;
+l3.m = body3.Mass;
 
 l4 = Link('d',0,'a',0,'alpha',-pi/2,'offset',0, 'qlim', jointLim4);
 l4.I = body4.Inertia;
 l4.r = body3.CenterOfMass + body4.CenterOfMass;
+l4.m = body4.Mass;
 
 l5 = Link('d',0.3215,'a',0,'alpha',pi/2,'offset',0,...
     'offset', 0, 'qlim', jointLim5);
 l5.I = body5.Inertia;
 l5.r = body5.CenterOfMass;
+l5.m = body5.Mass;
 
 l6 = Link('d',0,'a',0,'alpha',-pi/2,'offset',0, 'qlim', jointLim6);
 l6.I = body6.Inertia;
 l6.r = body6.CenterOfMass + body5.CenterOfMass;
+l6.m = body6.Mass;
 
 
 l7 = Link('d',0.3049,'a',0,'alpha',0,'offset',0, 'qlim', jointLim7);
 l7.I = body7.Inertia;
 l7.r = body7.CenterOfMass;
+l7.m = body7.Mass;
 
 
 links = [l1 l2 l3 l4 l5 l6 l7];
 
 robot = SerialLink(links, 'name', 'test');
+
+robot.base = robot.base * transl(0,0,0.7260);
 
 robot.plot(startPos);
 

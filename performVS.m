@@ -1,28 +1,39 @@
-function [bot] =  performVS(moveToStart)
+function [bot] =  performVS(status)
 %% Draw Fetch and staircase model
 close all;
 clc;
 % clear;
 
-bot = drawFetch([0.9313    0.9591    0.2513   -0.4053   -0.1257   -2.0944    1]);
-modelLocation = transl(0.5,  0, -0.8);
+startPos = [1.4772    1.0687    0.1256   -0.4053   -0.0001   -2.1380    1.1257];
+bot = drawFetch(startPos);
+%The above pose will see the entire circle in the top left frame, for
+%simplicity i only look at the centre of the circle. However, if you want
+%to see the full circle in the frame, comment out the lines labelled by
+%'These two line' this will show the points at the extremes of the cirlce.
+
+modelLocation = transl(0.45,  0.5, 0);
 hold on;
 helixModel = PartLoader('helix3.ply', modelLocation);
 
 
-mod1 = modelLocation * transl(0.1,0,0);
-mod2 = modelLocation * transl(-0.1,0,0);
-mod3 = modelLocation * transl(0,0.1,0);
-mod4 = modelLocation * transl(0,-0.1,0);
+mod1 = modelLocation * transl(0.15,0,0);
+mod2 = modelLocation * transl(-0.15,0,0);
+mod3 = modelLocation * transl(0,0.15,0);
+mod4 = modelLocation * transl(0,-0.15,0);
 
-pStar = [(512 + 50) (512 - 50) 512 512; 512 512 (512 - 50) (512 + 50)];
+pStar = [(512 + 200) (512 - 200) 512 512; 512 512 (512 - 200) (512 + 200)];
 P = [mod1(1:3,4) mod2(1:3,4) mod3(1:3,4) mod4(1:3,4)];
 
 depth = mean (P(1,:));
 % depth = [];
 
+
+%These two lines
 pStar = [512 512]';
 P = modelLocation(1:3,4);
+
+
+axis([-1.5 1.5 -1.5 1.5 -0.5 1.5])
 %% Setup Cam
 
 cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
@@ -100,12 +111,23 @@ while true
     fprintf('v: %.3f %.3f %.3f %.3f %.3f %.3f\n', v);
     
     
-    v(1) = -v(1);
-    v(2) = v(2);
-    v(3) = v(3);
-    v(4) = -v(4) * 0.1;
-    v(5) = v(5) * 0.1;
-    v(6) = v(6) * 0.1;
+    if(length(pStar(1,:)) == 1)
+        v(1) = -v(1);
+        v(2) = v(2);
+        v(3) = v(3);
+        v(4) = -v(4);
+        v(5) = v(5);
+        v(6) = v(6);
+    else
+
+        v(1) = v(1);
+        v(2) = v(2);
+        v(3) = v(3) * 0.1;
+        v(4) = v(4);
+        v(5) = -v(5);
+        v(6) = v(6);
+    end
+    
     
     J2 = bot.jacob0(bot.getpos);
     
@@ -145,17 +167,20 @@ while true
 %         break;
 %     end
 
-    if(mean(e) < 1)
+    test = (abs(e) < 3);
+    if(test)
+        e
+        test
         break
     end
     
     %update current joint position
-    q0 = q;
+%     q0 = q;
 end %loop finishese
 
 %% Move along Z
 height = bot.fkine(bot.getpos);
-height = (height(3,4) + 0.8);
+height = (height(3,4));
 W = eye(7);
 c = [1 1 1 1 1 1 1];
 fps = 25;
@@ -163,13 +188,16 @@ while(height ~= 0)
     distance = bot.fkine(bot.getpos) - modelLocation;
     
     height = bot.fkine(bot.getpos);
-    height = (height(3,4) + 1);
+    height = (height(3,4));
     
-    if(height < 0.3)
+    test = norm(distance(1:3,4));
+    if(test < 0.07)
         break;
     end
     
-    velocity = [0 0 -1 0 0 0]';
+%     velocity = [0 0 -1 0 0 0]';
+
+    velocity = [-distance(1:3,4)' 0 0 0]';
     
      J2 = bot.jacob0(bot.getpos);
     
@@ -200,7 +228,11 @@ while(height ~= 0)
     pause(1/fps);
 end
 %% Move piece to random spot
-if(moveToStart)
+tau_max = [33.82 131.76 76.94 66.18 29.35 25.70 7.36]';
+
+% status = 2;
+
+if(status == 1)
     qMatrix = jtraj(bot.getpos, [0.9313    0.9591    0.2513   -0.4053   -0.1257   0   1],40);
 
     for i = 1:length(qMatrix(:,1))
@@ -211,5 +243,23 @@ if(moveToStart)
     end
 end
 
-pause;
+if(status == 2)
+    mass = 2;
+    time = 3;
+    dynamicTorque(bot,helixModel,1, mass, time,tau_max);
+    
+end
+
+
+if(status == 3)
+    mass = 5;
+    time = 1;
+    dynamicTorque(bot,helixModel,0, mass, time,tau_max);
+    
+end
+
+
+
+pause
+
 end

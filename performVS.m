@@ -4,6 +4,8 @@ close all;
 clc;
 % clear;
 
+tau_max = [33.82 131.76 76.94 66.18 29.35 25.70 7.36]';
+maxSpeed = [1.25 1.45 1.57 1.52  1.57 2.26 2.26];
 startPos = [1.4772    1.0687    0.1256   -0.4053   -0.0001   -2.1380    1.1257];
 bot = drawFetch(startPos);
 %The above pose will see the entire circle in the top left frame, for
@@ -203,17 +205,17 @@ while(height ~= 0)
     
     jV = (inv(W)*J2')*inv(J2*inv(W)*J2')*velocity;
     
-    slowDown = 0;
     
-    for x = 1:length(jV)
-        if(jV(x) > 20)
-            slowDown = 1;
+    for z = 1:length(jV)
+        if(jV(z) > maxSpeed(z))
+            ratio = maxSpeed(z)/jV(z);
+            jV = jV*ratio;
+        elseif (jV(z) < -maxSpeed(z))
+            ratio = -maxSpeed(z)/jV(z);
+            jV = jV*ratio;
         end
     end
     
-    if(slowDown)
-        jV = jV.*0.01;
-    end
     
     qp = jV;
     q0 = bot.getpos;
@@ -228,8 +230,7 @@ while(height ~= 0)
     pause(1/fps);
 end
 %% Move piece to random spot
-tau_max = [33.82 131.76 76.94 66.18 29.35 25.70 7.36]';
-maxSpeed = [1.25 1.45 1.57 1.52  1.57 2.26 2.26];
+
 % delete(cam);
 cam.T = transl(0,0,10);
 drawnow;

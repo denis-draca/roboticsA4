@@ -1,4 +1,4 @@
-function [bot] =  performVS(status)
+function [cam] =  performVS(status)
 %% Draw Fetch and staircase model
 close all;
 clc;
@@ -229,9 +229,11 @@ while(height ~= 0)
 end
 %% Move piece to random spot
 tau_max = [33.82 131.76 76.94 66.18 29.35 25.70 7.36]';
-
-% status = 2;
-
+maxSpeed = [1.25 1.45 1.57 1.52  1.57 2.26 2.26];
+% delete(cam);
+cam.T = transl(0,0,10);
+drawnow;
+% status = 3;
 if(status == 1)
     qMatrix = jtraj(bot.getpos, [0.9313    0.9591    0.2513   -0.4053   -0.1257   0   1],40);
 
@@ -245,21 +247,21 @@ end
 
 if(status == 2)
     mass = 2;
-    time = 3;
-    dynamicTorque(bot,helixModel,1, mass, time,tau_max);
+    time = 0.5;
+    overallTorque = dynamicTorque(bot,helixModel,1, mass, time,tau_max, maxSpeed);
+    disp("Sucessfully Completed Drop");
     
 end
 
 
 if(status == 3)
     mass = 5;
-    time = 1;
-    dynamicTorque(bot,helixModel,0, mass, time,tau_max);
+    time = 0.5;
+    overallTorque = dynamicTorque(bot,helixModel,0, mass, time,tau_max, maxSpeed);
     
 end
-
-
-
-pause
+try
+    plotTorques(overallTorque,tau_max);
+end
 
 end

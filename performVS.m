@@ -8,33 +8,40 @@ tau_max = [33.82 131.76 76.94 66.18 29.35 25.70 7.36]';
 maxSpeed = [1.25 1.45 1.57 1.52  1.57 2.26 2.26];
 startPos = [1.4772    1.0687    0.1256   -0.4053   -0.0001   -2.1380    1.1257];
 bot = drawFetch(startPos);
-%The above pose will see the entire circle in the top left frame, for
-%simplicity i only look at the centre of the circle. However, if you want
-%to see the full circle in the frame, comment out the lines labelled by
-%'These two line' this will show the points at the extremes of the cirlce.
 
 modelLocation = transl(0.45,  0.5, 0);
 hold on;
 helixModel = PartLoader('helix3.ply', modelLocation);
 
+mod1 = modelLocation * transl(0.15,0,0); 
+mod2 = modelLocation * transl(-0.15,0,0);
+mod3 = modelLocation * transl(0,0.15,0); 
+mod4 = modelLocation * transl(0,-0.15,0);
 
-mod1 = modelLocation * transl(0.15,0,0); %2
-mod2 = modelLocation * transl(-0.15,0,0);%1
-mod3 = modelLocation * transl(0,0.15,0); %4
-mod4 = modelLocation * transl(0,-0.15,0);%3
+pS1 = [(512 + 170);512];
+pS2 = [(512 - 170);512];
+pS3 = [512;(512 - 170)];
+pS4 = [512;(512 + 170)];
 
-pStar = [(512 + 150) (512 - 150) 512 (512); 512 (512) (512 - 150) (512 + 150)];
+pStar = [pS2 pS1 pS4  pS3];
+
+% pStemp = pStar;
+% 
+% pStar(1,:) = pStemp(2,:);
+% pStar(2,:) = pStemp(1,:);
+% P = [mod1(1:3,4) mod2(1:3,4) mod3(1:3,4) mod4(1:3,4)];
+
 P = [mod1(1:3,4) mod2(1:3,4) mod3(1:3,4) mod4(1:3,4)];
 
-P = [mod2(1:3,4) mod1(1:3,4) mod4(1:3,4)  mod3(1:3,4)];
-
 depth = mean (P(1,:));
+T1 = bot.fkine(bot.getpos);
+depth = norm(T1(1:3,4) - modelLocation(1:3,4));
 % depth = [];
 
 
 %These two lines
-pStar = [512 512]';
-P = modelLocation(1:3,4);
+% pStar = [512 512]';
+% P = modelLocation(1:3,4);
 
 
 axis([-1.5 1.5 -1.5 1.5 -0.5 1.5])
@@ -48,7 +55,7 @@ fps = 25;
 
 %Define values
 %gain of the controler
-lambda = 3;
+lambda = 1;
 
 %% Draw inital State
 
@@ -79,6 +86,8 @@ W = eye(7);
 c = [1 1 1 1 1 1 1];
 
 while true
+%     T1 = bot.fkine(bot.getpos);
+%     depth = norm(T1(1:3,4) - modelLocation(1:3,4))
 %     depth = bot.fkine(bot.getpos);
 %     depth = (depth(3,4) + 1) * 1000;
     ksteps = ksteps + 1;
@@ -112,7 +121,7 @@ while true
         status = -1;
         return
     end
-    fprintf('v: %.3f %.3f %.3f %.3f %.3f %.3f\n', v);
+%     fprintf('v: %.3f %.3f %.3f %.3f %.3f %.3f\n', v);
     
     
     if(length(pStar(1,:)) == 1)
@@ -126,10 +135,10 @@ while true
 
         v(1) = -v(1);
         v(2) = v(2);
-        v(3) = v(3) * 0.3;
+        v(3) = -v(3);
         v(4) = -v(4);
         v(5) = v(5);
-        v(6) = v(6);
+        v(6) = -v(6);
     end
     
     
@@ -195,13 +204,11 @@ while(height ~= 0)
     height = (height(3,4));
     
     test = norm(distance(1:3,4));
-    if(test < 0.07)
+    if(test < 0.09)
         break;
     end
     
-%     velocity = [0 0 -1 0 0 0]';
-
-    velocity = [-distance(1:3,4)' 0 0 0]';
+    velocity = [0 0 -1 0 0 0]';
     
      J2 = bot.jacob0(bot.getpos);
     
@@ -249,8 +256,9 @@ if(status == 1)
 end
 
 if(status == 2)
+    disp("Mass = 2kg");
     mass = 2;
-    time = 0.5;
+    time = 1;
     overallTorque = dynamicTorque(bot,helixModel,1, mass, time,tau_max, maxSpeed);
     disp("Sucessfully Completed Drop");
     
@@ -258,8 +266,9 @@ end
 
 
 if(status == 3)
+    disp("Mass = 5kg");
     mass = 5;
-    time = 0.5;
+    time = 1;
     overallTorque = dynamicTorque(bot,helixModel,0, mass, time,tau_max, maxSpeed);
     
 end

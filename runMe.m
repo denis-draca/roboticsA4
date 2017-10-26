@@ -24,7 +24,7 @@ camObj = performVS(2);
 %the same time as the 2kg scenario. It will fail while moving along y
 %Three motions once the object is grasped
 %   Move up 0.5
-%   move along y 0.5
+%   move along y 1.5
 %   move down 0.5
 % Torques will be graphed at the completion of all motions. Seperate figure
 % for each motion. Each joint is on seperate subplot. Blue line indicates

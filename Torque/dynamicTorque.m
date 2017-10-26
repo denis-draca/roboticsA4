@@ -3,7 +3,7 @@ function [ overallTorque ] = dynamicTorque( bot, helixModel, safeSteps, mass, ti
  
     % Move piece up
     T1 = bot.fkine(bot.getpos);
-    T2 = T1 * transl(0,0,-0.5);
+    T2 = T1 * transl(-0.4,0,-1);
     
     
     
@@ -35,7 +35,7 @@ function [ overallTorque ] = dynamicTorque( bot, helixModel, safeSteps, mass, ti
     
      % Move along y
     T1 = bot.fkine(bot.getpos);
-    T2 = T1 * transl(0,-0.5,0);
+    T2 = T1 * transl(0,-3,0);
     
     
     [torqueList, qMatrix] = torqueFun(bot, T1, T2, time, mass, masPos, safeSteps,maxSpeed);
@@ -66,7 +66,7 @@ function [ overallTorque ] = dynamicTorque( bot, helixModel, safeSteps, mass, ti
     
      % place piece down
     T1 = bot.fkine(bot.getpos);
-    T2 = T1 * transl(0,0,0.5);
+    T2 = T1 * transl(0.4,0,1);
     
     
     [torqueList, qMatrix] = torqueFun(bot, T1, T2, time, mass, masPos, safeSteps,maxSpeed);

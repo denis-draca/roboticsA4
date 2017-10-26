@@ -18,13 +18,15 @@ hold on;
 helixModel = PartLoader('helix3.ply', modelLocation);
 
 
-mod1 = modelLocation * transl(0.15,0,0);
-mod2 = modelLocation * transl(-0.15,0,0);
-mod3 = modelLocation * transl(0,0.15,0);
-mod4 = modelLocation * transl(0,-0.15,0);
+mod1 = modelLocation * transl(0.15,0,0); %2
+mod2 = modelLocation * transl(-0.15,0,0);%1
+mod3 = modelLocation * transl(0,0.15,0); %4
+mod4 = modelLocation * transl(0,-0.15,0);%3
 
-pStar = [(512 + 200) (512 - 200) 512 512; 512 512 (512 - 200) (512 + 200)];
+pStar = [(512 + 150) (512 - 150) 512 (512); 512 (512) (512 - 150) (512 + 150)];
 P = [mod1(1:3,4) mod2(1:3,4) mod3(1:3,4) mod4(1:3,4)];
+
+P = [mod2(1:3,4) mod1(1:3,4) mod4(1:3,4)  mod3(1:3,4)];
 
 depth = mean (P(1,:));
 % depth = [];
@@ -53,7 +55,7 @@ lambda = 3;
 Tc0= bot.fkine(bot.getpos);
 cam.T = Tc0;
 % P = modelLocation(1:3,4);
-% plot_sphere(P, 0.05, 'b')
+plot_sphere(P, 0.05, 'b')
 cam.plot_camera(P, 'label','scale',0.15);
 
 %% Projection
@@ -122,11 +124,11 @@ while true
         v(6) = v(6);
     else
 
-        v(1) = v(1);
+        v(1) = -v(1);
         v(2) = v(2);
-        v(3) = v(3) * 0.1;
-        v(4) = v(4);
-        v(5) = -v(5);
+        v(3) = v(3) * 0.3;
+        v(4) = -v(4);
+        v(5) = v(5);
         v(6) = v(6);
     end
     

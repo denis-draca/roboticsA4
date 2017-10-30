@@ -62,7 +62,7 @@ lambda = 1;
 Tc0= bot.fkine(bot.getpos);
 cam.T = Tc0;
 % P = modelLocation(1:3,4);
-plot_sphere(P, 0.05, 'b')
+% plot_sphere(P, 0.05, 'b')
 cam.plot_camera(P, 'label','scale',0.15);
 
 %% Projection
@@ -192,6 +192,12 @@ while true
 end %loop finishese
 
 %% Move along Z
+% pause;
+%Camera is no longer needed, lets just move it away
+cam.T = transl(0,0,10);
+drawnow;
+
+
 height = bot.fkine(bot.getpos);
 height = (height(3,4));
 W = eye(7);
@@ -241,8 +247,7 @@ end
 %% Move piece to random spot
 
 % delete(cam);
-cam.T = transl(0,0,10);
-drawnow;
+
 % status = 3;
 if(status == 1)
     qMatrix = jtraj(bot.getpos, [0.9313    0.9591    0.2513   -0.4053   -0.1257   0   1],40);

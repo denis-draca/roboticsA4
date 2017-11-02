@@ -8,12 +8,7 @@ dt = 1/10;
 steps = time/dt;                                                           
 q1 = bot.getpos;
                                                  
-
-
 q(1,:) = q1;
-
-
-
 
 x1 = zeros(6,1);
 x2 = zeros(6,1);
@@ -26,9 +21,6 @@ s = lspb(0,1,steps);                                 % Create interpolation scal
 for i = 1:steps
     x(:,i) = x1*(1-s(i)) + s(i)*x2;                  % Create trajectory in x-y plane
 end
-
-
-
 
 
 qd = zeros(steps,7);                                                        % Array of joint velocities

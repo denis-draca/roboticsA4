@@ -146,16 +146,14 @@ while true
     
     jV = (inv(W)*J2')*inv(J2*inv(W)*J2')*v;
     
-    slowDown = 0;
-    
-    for x = 1:length(jV)
-        if(jV(x) > 20)
-            slowDown = 1;
+    for z = 1:length(jV)
+        if(jV(z) > maxSpeed(z))
+            ratio = maxSpeed(z)/jV(z);
+            jV = jV*ratio;
+        elseif (jV(z) < -maxSpeed(z))
+            ratio = -maxSpeed(z)/jV(z);
+            jV = jV*ratio;
         end
-    end
-    
-    if(slowDown)
-        jV = jV.*0.01;
     end
     
     qp = jV;

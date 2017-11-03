@@ -4,7 +4,7 @@ function [ torques, qTotal ] = torqueFun( bot, T1, T2, time, mass, massPos, torq
 tau_max = [33.82 131.76 76.94 66.18 29.35 25.70 7.36]';
 
 
-dt = 1/10;                                                                
+dt = 1/50;                                                                
 steps = time/dt;                                                           
 q1 = bot.getpos;
                                                  
